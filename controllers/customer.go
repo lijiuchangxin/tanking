@@ -74,7 +74,7 @@ func (c *CustomerController)DeleteCustomer() {
 		// 通过apiToken删除客户，通过id删除客户
 		// 如果id存在，则通过id删除客户
 		// 如果apiToken存在，则通过token删除客户
-		if  !models.JudgeIsExists("UtCustomer", "Id", request.Id) || (request.OpenApiToken != "" &&
+		if  !models.JudgeIsExists("UtCustomer", "Id", request.Id) && (request.OpenApiToken != "" &&
 			!models.JudgeIsExists("UtCustomer", "OpenApiToken", request.OpenApiToken)) {
 			Logs.Info("customer", request.Id, request.OpenApiToken, "not exist")
 			response.Msg = "删除的客户不存在"
