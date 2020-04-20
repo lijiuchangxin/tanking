@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "lzsapi/routers"
+	_ "customer_managenment/routers"
 	"github.com/astaxie/beego"
 )
 

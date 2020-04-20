@@ -2,8 +2,10 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"github.com/astaxie/beego/orm"
 	"reflect"
+	"time"
 )
 
 type UtCustomer struct {
@@ -32,6 +34,8 @@ type UtCustomer struct {
 	FirstContactAt		int			`json:"first_contact_im_at"`
 	FirstContactImAt	int			`json:"last_contact_im_at"`
 	OpenApiToken		string		`json:"open_api_token"`
+	Alters 				[]*CustomerAlteration 	`orm:"reverse(many)"`
+	FollowUps			[]*CustomerFollowUp		`orm:"reverse(many)"`
 }
 
 
@@ -39,29 +43,92 @@ type CustomerFollowUp struct {
 	Id 				int			`json:"id"`
 	CreateAt		int			`json:"create_at"`
 	UpdatedAt		int			`json:"updated_at"`
-	CustomerId		int			`json:"customer_id"`
+	//CustomerId		int			`json:"customer_id"`
 	FeedType		string		`json:"feed_type"`
 	UserId			int			`json:"user_id"`
 	UserAvatar		string		`json:"user_avatar"`
 	UserNickName	string		`json:"user_nick_name"`
+	Customer		*UtCustomer	`orm:"rel(fk);cascade"`
 }
 
 
 type CustomerAlteration struct {
 	Id 				int			`json:"id"`
-	CustomerId		int			`json:"customer_id"`
+	//CustomerId		int			`json:"customer_id"`
 	UserId			int			`json:"user_id"`
 	UserNickName 	string		`json:"user_nike_name"`
 	AlterTime		int			`json:"alter_time"`
 	Summary			string		`json:"summary"`
 	FeedType		string		`json:"feed_type"`
+	Customer		*UtCustomer	`orm:"rel(fk);cascade"`
+
 }
 
 
-func CreateCustomer(customer *UtCustomer) error {
+// 判断是否存在
+// table 查询的表名
+// col 查询的列名
+// res 查询的值
+func JudgeIsExists(table, col string, res interface{}) bool {
+	// false 不存在， true 存在
 	o := orm.NewOrm()
-	if _, err := o.Insert(customer); err != nil { return errors.New("create customer error") }
+	if exist := o.QueryTable(table).Filter(col, res).Exist(); exist { return true }
+	return false
+}
+
+// CreateCustomer 新增客户详情
+func CreateCustomer(customer *UtCustomer) (bool, error) {
+	o := orm.NewOrm()
+	createTime := int(time.Now().Unix())
+	// 创建时间
+	customer.CreateAt, customer.UpdatedAt = createTime, createTime
+	// api用户昵称
+	if customer.OpenApiToken != "" {
+		customer.CustomerNikeName = fmt.Sprintf("API匿名客户(%s)", customer.OpenApiToken)
+	}
+	//_ = o.Begin()
+	// 插入数据库
+	if _, err := o.Insert(customer); err != nil {
+		return false, err }
+	alter := CustomerAlteration{
+		//CustomerId:   customer.Id,
+		Customer:	  customer,
+		UserId:       customer.OwnerId,
+		UserNickName: customer.OwnerName,
+		AlterTime:    createTime,
+		Summary:      "创建了客户",
+	}
+	// 创建配套跟进数据
+	if err := CreateCustomerAlter(&alter); err != nil {
+		//_ = o.Rollback()
+		return false, err
+	}
+	//_ = o.Commit()
+	return true, nil
+}
+
+// CreateCustomerAlter 新增客户跟进
+func CreateCustomerAlter(alter *CustomerAlteration) error {
+	o := orm.NewOrm()
+	if _, err := o.Insert(alter); err != nil { return err }
 	return nil
+}
+
+// RemoveCustomer 从客户表中删除客户
+func RemoveCustomer(id int, token string) bool {
+	o := orm.NewOrm()
+	customer := UtCustomer{Id:id}
+	// 通过id删除
+	if err := o.Read(&customer); err == nil{
+		if _, err := o.Delete(&customer); err != nil {
+			return false }
+	} else {
+		// 通过token删除
+		if _, err := o.QueryTable("UtCustomer").Filter("OpenApiToken", token).Delete(); err != nil {
+			return false
+		}
+	}
+	return true
 }
 
 
@@ -86,10 +153,10 @@ func UpdateCustomer(cid int, paras map[string]interface{}) (err error) {
 }
 
 
-func DeleteCustomer(cid int) error {
+func DeleteCustomer(cid int) (bool, error) {
 	o := orm.NewOrm()
-	if _, err := o.Delete(&UtCustomer{Id: cid}); err != nil { return errors.New("delete error") }
-	return nil
+	if _, err := o.Delete(&UtCustomer{Id: cid}); err != nil { return false, err }
+	return true, nil
 }
 
 
@@ -100,9 +167,4 @@ func ShowCustomerDetail(cid int) (res map[string]interface{}) {
 	return nil
 }
 
-func JudgeApiIsExists(api string) bool {
-	o := orm.NewOrm()
-	if num, _ := o.QueryTable("UtCustomer").Filter("OpenApiToken", api).Count(); num > 0 { return false}
-	return true
-}
 
