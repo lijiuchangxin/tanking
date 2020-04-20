@@ -42,21 +42,21 @@ func (c *CustomerController)CreateCustomer() {
 		if  models.JudgeIsExists("UtCustomer", "OpenApiToken", request.OpenApiToken) &&
 			request.OpenApiToken != "" {
 			Logs.Info(request.OpenApiToken, "already exist, don't register again")
-			response.Msg = "该客户已注册"
+			response.Msg = "the customer is registered"
 		} else {
 			// 数据库新增客户
-			if res, err := models.InsertCustomer(&request.UtCustomer); !res {
+			if err := models.InsertCustomer(&request.UtCustomer); err != nil {
 				Logs.Error(request.OpenApiToken, "register fail, because", err)
-				response.Msg = "注册客户失败"
+				response.Msg = "failed to register customer"
 			} else {
 				Logs.Info(request.OpenApiToken, "register success")
 				response.Code = 0
+				response.UtCustomer = request.UtCustomer
 			}
 		}
 	} else {
-		response.Msg = "传入参数错误"
+		response.Msg = "incoming parameter error"
 	}
-	response.Id = request.Id
 	c.Data["json"] = response
 	c.ServeJSON()
 	return
@@ -77,18 +77,18 @@ func (c *CustomerController)DeleteCustomer() {
 		if  !models.JudgeIsExists("UtCustomer", "Id", request.Id) && (request.OpenApiToken != "" &&
 			!models.JudgeIsExists("UtCustomer", "OpenApiToken", request.OpenApiToken)) {
 			Logs.Info("customer", request.Id, request.OpenApiToken, "not exist")
-			response.Msg = "删除的客户不存在"
+			response.Msg = "deleted customer does not exist"
 		} else {
 			if !models.RemoveCustomer(request.Id, request.OpenApiToken) {
 				Logs.Error("delete customer", request.Id, request.OpenApiToken, "fail")
-				response.Msg = "删除客户失败"
+				response.Msg = "failed to delete customer"
 			} else {
 				Logs.Info("delete", request.Id, request.OpenApiToken, "success")
 				response.Code = 0
 			}
 		}
 	} else {
-		response.Msg = "传入参数错误"
+		response.Msg = "incoming parameter error"
 	}
 	response.Data.OpenApiToken = request.OpenApiToken
 	response.Data.Id = request.Id
@@ -99,7 +99,29 @@ func (c *CustomerController)DeleteCustomer() {
 
 // CreateCustomerFollow新增客户跟进
 func (c *CustomerController)CreateCustomerFollow() {
-
+	request := new(RequestNewFollow)
+	response := new(ResponseNewFollow)
+	response.Code = 1
+	response.Msg = "success"
+	// 解析校验输入的参数
+	if res := c.AnalysisAndVerify(request); res {
+		// TODO 判断的权限以及合法性
+		if res := models.JudgeIsExists("UtCustomer", "Id", request.Customer.Id); !res {
+			Logs.Info("ut_customer_id not exist")
+			response.Msg = "the customer to be followed up dose not exist"
+		} else {
+			if err := models.InsertCustomerFollow(&request.CustomerFollowUp); err != nil {
+				Logs.Error("new customer follow up failed, because", err)
+				response.Msg = "new customer follow up failed"
+			} else {
+				Logs.Info("new follow up success")
+				response.Code = 0
+				response.CustomerFollowUp = request.CustomerFollowUp
+			}
+		}
+	} else {
+		response.Msg = "incoming parameter error"
+	}
 }
 
 // DeleteCustomerFollow删除客户跟进

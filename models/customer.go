@@ -77,7 +77,7 @@ func JudgeIsExists(table, col string, res interface{}) bool {
 }
 
 // InsertCustomer 新增客户详情
-func InsertCustomer(customer *UtCustomer) (bool, error) {
+func InsertCustomer(customer *UtCustomer) error {
 	o := orm.NewOrm()
 	createTime := int(time.Now().Unix())
 	// 创建时间
@@ -89,7 +89,7 @@ func InsertCustomer(customer *UtCustomer) (bool, error) {
 	//_ = o.Begin()
 	// 插入数据库
 	if _, err := o.Insert(customer); err != nil {
-		return false, err }
+		return err }
 	alter := CustomerAlteration{
 		//CustomerId:   customer.Id,
 		Customer:	  customer,
@@ -101,10 +101,10 @@ func InsertCustomer(customer *UtCustomer) (bool, error) {
 	// 创建配套跟进数据
 	if err := InsertCustomerAlter(&alter); err != nil {
 		//_ = o.Rollback()
-		return false, err
+		return err
 	}
 	//_ = o.Commit()
-	return true, nil
+	return nil
 }
 
 // InsertCustomerAlter 新增客户跟进
@@ -129,6 +129,15 @@ func RemoveCustomer(id int, token string) bool {
 		}
 	}
 	return true
+}
+
+// InsertCustomerFollow 插入客户跟进
+func InsertCustomerFollow(follow *CustomerFollowUp) error {
+	o := orm.NewOrm()
+	createTime := int(time.Now().Unix())
+	follow.CreateAt, follow.UpdatedAt = createTime, createTime
+	if _, err := o.Insert(follow); err != nil { return err}
+	return nil
 }
 
 

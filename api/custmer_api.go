@@ -2,6 +2,7 @@ package api
 
 import (
 	"customer_managenment/models"
+	"fmt"
 )
 
 // 校验输入参数是否正确
@@ -19,7 +20,8 @@ type CommonResponse struct {
 // 新增客户返回体
 type ResponseNewCustomer struct {
 	CommonResponse
-	Id 	  int		   `json:"id"`
+	//Id 	  int		   	`json:"id"`
+	models.UtCustomer	`json:"customer"`
 }
 
 // 新增客户请求体
@@ -34,13 +36,32 @@ type RequestDelCustomer struct {
 
 }
 
-// 删除客户返回题
+// 删除客户返回体
 type ResponseDelCustomer struct {
 	CommonResponse
 	Data struct{
 		Id				int			`json:"id"`
 		OpenApiToken	string		`json:"open_api_token"`
 	}								`json:"data"`
+}
+
+// 新增客户跟进请求体
+type RequestNewFollow struct {
+	models.CustomerFollowUp
+}
+
+// 新增客户跟进返回体
+type ResponseNewFollow struct {
+	CommonResponse
+	models.CustomerFollowUp		`json:"customer_follow_up"`
+}
+
+// 校验新增客户跟进入参合法性
+func (request *RequestNewFollow)VerifyInputPara() bool {
+	fmt.Println("Id", request.Id)
+	fmt.Println("uid" ,request.UserId)
+	if request.Id <= 0 || request.UserId <= 0 { return false }
+	return true
 }
 
 // 校验新增客户请求体入参合法性
