@@ -30,7 +30,7 @@ func (c *CustomerController) AnalysisAndVerify(request Verify) bool {
 
 
 // NewCustomer 创建客户
-func (c *CustomerController)NewCustomer() {
+func (c *CustomerController)CreateCustomer() {
 	// 实例新增返回体，并默认初始值
 	response := new(ResponseNewCustomer)
 	response.Code = 1
@@ -45,7 +45,7 @@ func (c *CustomerController)NewCustomer() {
 			response.Msg = "该客户已注册"
 		} else {
 			// 数据库新增客户
-			if res, err := models.CreateCustomer(&request.UtCustomer); !res {
+			if res, err := models.InsertCustomer(&request.UtCustomer); !res {
 				Logs.Error(request.OpenApiToken, "register fail, because", err)
 				response.Msg = "注册客户失败"
 			} else {
@@ -97,3 +97,12 @@ func (c *CustomerController)DeleteCustomer() {
 	return
 }
 
+// CreateCustomerFollow新增客户跟进
+func (c *CustomerController)CreateCustomerFollow() {
+
+}
+
+// DeleteCustomerFollow删除客户跟进
+func (c *CustomerController)DeleteCustomerFollow() {
+
+}

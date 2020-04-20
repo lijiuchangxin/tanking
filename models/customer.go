@@ -76,8 +76,8 @@ func JudgeIsExists(table, col string, res interface{}) bool {
 	return false
 }
 
-// CreateCustomer 新增客户详情
-func CreateCustomer(customer *UtCustomer) (bool, error) {
+// InsertCustomer 新增客户详情
+func InsertCustomer(customer *UtCustomer) (bool, error) {
 	o := orm.NewOrm()
 	createTime := int(time.Now().Unix())
 	// 创建时间
@@ -99,7 +99,7 @@ func CreateCustomer(customer *UtCustomer) (bool, error) {
 		Summary:      "创建了客户",
 	}
 	// 创建配套跟进数据
-	if err := CreateCustomerAlter(&alter); err != nil {
+	if err := InsertCustomerAlter(&alter); err != nil {
 		//_ = o.Rollback()
 		return false, err
 	}
@@ -107,8 +107,8 @@ func CreateCustomer(customer *UtCustomer) (bool, error) {
 	return true, nil
 }
 
-// CreateCustomerAlter 新增客户跟进
-func CreateCustomerAlter(alter *CustomerAlteration) error {
+// InsertCustomerAlter 新增客户跟进
+func InsertCustomerAlter(alter *CustomerAlteration) error {
 	o := orm.NewOrm()
 	if _, err := o.Insert(alter); err != nil { return err }
 	return nil
