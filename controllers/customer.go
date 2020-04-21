@@ -54,6 +54,7 @@ func (c *CustomerController)CreateCustomer() {
 			if err := models.InsertCustomer(&request.UtCustomer); err != nil {
 				Logs.Error(request.OpenApiToken, "register fail, because", err)
 				response.Msg = "failed to register customer"
+				response.Code = 2
 			} else {
 				MapCustomerDetail(response, &request.UtCustomer)
 			}
@@ -86,6 +87,7 @@ func (c *CustomerController)DeleteCustomer() {
 			if !models.RemoveCustomer(request.Id, request.OpenApiToken) {
 				Logs.Error("delete customer", request.Id, request.OpenApiToken, "fail")
 				response.Msg = "failed to delete customer"
+				response.Code = 2
 			} else {
 				Logs.Info("delete", request.Id, request.OpenApiToken, "success")
 				response.Code = 0
@@ -120,6 +122,7 @@ func (c *CustomerController)CreateCustomerFollow() {
 				// 新数据插入数据库失败
 				Logs.Error("new customer follow up failed, because", err)
 				response.Msg = "new customer follow up failed"
+				response.Code = 2
 			} else {
 				// 添加成功，更新返回题
 				Logs.Info("new follow up success")
@@ -152,6 +155,7 @@ func (c *CustomerController)DeleteCustomerFollow() {
 			if !res {
 				Logs.Error("delete customer follow up", request.Id, "fail")
 				response.Msg = "failed to delete customer follow up"
+				response.Code = 2
 			} else {
 				Logs.Info("delete", request.Id, "success")
 				response.Code = 0
@@ -215,6 +219,7 @@ func (c *CustomerController)UpdateCustomer() {
 			} else {
 				Logs.Info("update customer failed")
 				response.Msg = err.Error()
+				response.Code = 2
 			}
 		}
 	} else {
