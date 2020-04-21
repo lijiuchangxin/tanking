@@ -22,8 +22,8 @@ type UtCustomer struct {
 	SourceChannel		string		`json:"source_channel"`
 	CreateAt			int			`json:"create_at"`
 	UpdatedAt			int			`json:"updated_at"`
-	OrganizationName	string		`json:"organization _id"`
-	OrganizationId		int			`json:"organization _name"`
+	OrganizationName	string		`json:"organization_name "`
+	OrganizationId		int			`json:"organization_id"`
 	OwnerGroupId		int			`json:"owner_group_id"`
 	OwnerGroupName		string		`json:"owner_group_name "`
 	OwnerId				int			`json:"owner_id"`
