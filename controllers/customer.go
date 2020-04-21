@@ -1,11 +1,11 @@
 package controllers
 
 import (
-	"encoding/json"
-	"github.com/astaxie/beego"
 	. "customer_managenment/api"
 	"customer_managenment/models"
 	. "customer_managenment/tool"
+	"encoding/json"
+	"github.com/astaxie/beego"
 )
 
 type CustomerController struct {
@@ -22,6 +22,7 @@ func (c *CustomerController) AnalysisAndVerify(request Verify) bool {
 	}
 	// 校验参数失败
 	if !request.VerifyInputPara() {
+
 		Logs.Info("input para error")
 		return false
 	}
@@ -106,25 +107,65 @@ func (c *CustomerController)CreateCustomerFollow() {
 	// 解析校验输入的参数
 	if res := c.AnalysisAndVerify(request); res {
 		// TODO 判断的权限以及合法性
-		if res := models.JudgeIsExists("UtCustomer", "Id", request.Customer.Id); !res {
+		//判断是否存在customer
+		if customer := models.GetCustomer2Id(request.CustomerId); customer == nil {
 			Logs.Info("ut_customer_id not exist")
 			response.Msg = "the customer to be followed up dose not exist"
 		} else {
+			request.Customer = customer
 			if err := models.InsertCustomerFollow(&request.CustomerFollowUp); err != nil {
+				// 新数据插入数据库失败
 				Logs.Error("new customer follow up failed, because", err)
 				response.Msg = "new customer follow up failed"
 			} else {
+				// 添加成功，更新返回题
 				Logs.Info("new follow up success")
 				response.Code = 0
-				response.CustomerFollowUp = request.CustomerFollowUp
+				response.CustomerFollowUp.Id = request.CustomerFollowUp.Id
+				response.CustomerFollowUp.CreateAt = request.CustomerFollowUp.CreateAt
+				response.CustomerFollowUp.CustomerId = request.CustomerFollowUp.Customer.Id
+				response.CustomerFollowUp.UserId = request.CustomerFollowUp.UserId
+				response.CustomerFollowUp.UserNickName = request.CustomerFollowUp.UserNickName
+				response.CustomerFollowUp.UserAvatar = request.CustomerFollowUp.UserAvatar
+				response.CustomerFollowUp.Content = request.CustomerFollowUp.Content
 			}
 		}
 	} else {
 		response.Msg = "incoming parameter error"
 	}
+	c.Data["json"] = response
+	c.ServeJSON()
+	return
 }
 
 // DeleteCustomerFollow删除客户跟进
 func (c *CustomerController)DeleteCustomerFollow() {
-
+	request := new(RequestDelFollow)
+	response := new(ResponseDelFollow)
+	response.Code = 1
+	response.Msg = "success"
+	// 解析校验输入的参数
+	if res := c.AnalysisAndVerify(request); res {
+		// 通过跟进的id判断跟进是否存在
+		if !models.JudgeIsExists("CustomerFollowUp", "Id", request.Id) {
+			Logs.Info("customer follow up", request.Id, "not exist")
+			response.Msg = "deleted customer follow up does not exist"
+		} else {
+			custerId, res := models.RemoveCustomerFollow(request.Id)
+			if !res {
+				Logs.Error("delete customer follow up", request.Id, "fail")
+				response.Msg = "failed to delete customer follow up"
+			} else {
+				Logs.Info("delete", request.Id, "success")
+				response.Code = 0
+				response.Data.Id = request.Id
+				response.Data.CustomerId = custerId
+			}
+		}
+	} else {
+		response.Msg = "incoming parameter error"
+	}
+	c.Data["json"] = response
+	c.ServeJSON()
+	return
 }

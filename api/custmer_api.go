@@ -2,7 +2,6 @@ package api
 
 import (
 	"customer_managenment/models"
-	"fmt"
 )
 
 // 校验输入参数是否正确
@@ -47,20 +46,47 @@ type ResponseDelCustomer struct {
 
 // 新增客户跟进请求体
 type RequestNewFollow struct {
+	CustomerId	int				`json:"customer_id"`
 	models.CustomerFollowUp
 }
 
 // 新增客户跟进返回体
 type ResponseNewFollow struct {
 	CommonResponse
-	models.CustomerFollowUp		`json:"customer_follow_up"`
+	CustomerFollowUp struct{
+		Id 				int			`json:"id"`
+		Content			string		`json:"content"`
+		CreateAt		int			`json:"create_at"`
+		CustomerId		int			`json:"customer_id"`
+		UserId			int			`json:"user_id"`
+		UserAvatar		string		`json:"user_avatar"`
+		UserNickName	string		`json:"user_nick_name"`
+	}								`json:"customer_follow_up"`
+
+
+	//models.CustomerFollowUp		`json:"customer_follow_up"`
+}
+
+
+// 删除跟进请求体
+type RequestDelFollow struct {
+	Id				 int		`json:"id"`
+
+}
+
+// 删除跟进返回体
+type ResponseDelFollow struct {
+	CommonResponse
+	Data struct{
+		Id				int			`json:"id"`
+		CustomerId		int		`json:"customer_id"`
+	}								`json:"data"`
 }
 
 // 校验新增客户跟进入参合法性
 func (request *RequestNewFollow)VerifyInputPara() bool {
-	fmt.Println("Id", request.Id)
-	fmt.Println("uid" ,request.UserId)
-	if request.Id <= 0 || request.UserId <= 0 { return false }
+	// customer必须>=0, userId>=0, content不能为空
+	if request.CustomerId <= 0 || request.UserId <= 0 || request.Content == "" { return false }
 	return true
 }
 
@@ -75,6 +101,13 @@ func (request *RequestNewCustomer)VerifyInputPara() bool {
 func (request *RequestDelCustomer)VerifyInputPara() bool {
 	// 所删除额客户的id必须为正整数或apiToken部位空
 	if request.Id <= 0 && request.OpenApiToken == "" { return false }
+	return true
+}
+
+// 校验删除跟进入参数合法行
+func (request *RequestDelFollow)VerifyInputPara() bool {
+	//  删除的客户跟进id必须>0
+	if request.Id  <= 0 { return false }
 	return true
 }
 

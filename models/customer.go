@@ -48,6 +48,7 @@ type CustomerFollowUp struct {
 	UserId			int			`json:"user_id"`
 	UserAvatar		string		`json:"user_avatar"`
 	UserNickName	string		`json:"user_nick_name"`
+	Content			string		`json:"content"`
 	Customer		*UtCustomer	`orm:"rel(fk);cascade"`
 }
 
@@ -75,6 +76,16 @@ func JudgeIsExists(table, col string, res interface{}) bool {
 	if exist := o.QueryTable(table).Filter(col, res).Exist(); exist { return true }
 	return false
 }
+
+
+// 通过客户id得到dbCol
+func GetCustomer2Id(id int) *UtCustomer {
+	customer := &UtCustomer{Id:id}
+	o := orm.NewOrm()
+	if err := o.Read(customer); err != nil { return nil }
+	return customer
+}
+
 
 // InsertCustomer 新增客户详情
 func InsertCustomer(customer *UtCustomer) error {
@@ -107,7 +118,7 @@ func InsertCustomer(customer *UtCustomer) error {
 	return nil
 }
 
-// InsertCustomerAlter 新增客户跟进
+// InsertCustomerAlter 新增客户变更
 func InsertCustomerAlter(alter *CustomerAlteration) error {
 	o := orm.NewOrm()
 	if _, err := o.Insert(alter); err != nil { return err }
@@ -136,8 +147,21 @@ func InsertCustomerFollow(follow *CustomerFollowUp) error {
 	o := orm.NewOrm()
 	createTime := int(time.Now().Unix())
 	follow.CreateAt, follow.UpdatedAt = createTime, createTime
-	if _, err := o.Insert(follow); err != nil { return err}
+	if _, err := o.Insert(follow); err != nil { return err }
 	return nil
+}
+
+// RemoveCustomerFollow 刪除客户跟进
+func RemoveCustomerFollow(id int) (int, bool) {
+	o := orm.NewOrm()
+	follow := CustomerFollowUp{Id:id}
+	// 通过id删除
+	if err := o.Read(&follow); err == nil{
+		if _, err := o.Delete(&follow); err == nil {
+			return follow.Customer.Id, true
+		}
+	}
+	return -1, false
 }
 
 
@@ -159,13 +183,6 @@ func UpdateCustomer(cid int, paras map[string]interface{}) (err error) {
 	if err = o.Commit(); err != nil { return errors.New("commit error") }
 
 	return
-}
-
-
-func DeleteCustomer(cid int) (bool, error) {
-	o := orm.NewOrm()
-	if _, err := o.Delete(&UtCustomer{Id: cid}); err != nil { return false, err }
-	return true, nil
 }
 
 
