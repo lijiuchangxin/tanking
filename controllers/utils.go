@@ -3,6 +3,7 @@ package controllers
 import (
 	. "customer_managenment/api"
 	model "customer_managenment/models"
+	"encoding/json"
 )
 
 // 映射客户变更
@@ -66,3 +67,36 @@ func MapCustomerDetail(response *ResponseNewCustomer, request *model.UtCustomer)
 	response.UtCustomer.FollowUp = followMap
 	response.UtCustomer.Alters = alterMap
 }
+
+func GetUpdateCustomerMap(request *RequestUpdateCustomer) map[string]interface{} {
+	nm := map[string]string{
+		"tag"			:"Tag",
+		"is_vip"		:"IsVip",
+		"desc"			:"Desc",
+		"tel_phone"		:"TelPhone",
+		"cell_phone"	:"cell_phone",
+	}
+	m := make(map[string]interface{})
+	res := make(map[string]interface{})
+	j, _ := json.Marshal(request)
+	_ = json.Unmarshal(j, &m)
+	delete(m, "customer_id")
+	for key, value := range m {
+		if value != nil { res[nm[key]] = value }
+	}
+	return res
+
+	// ??????????是个问题
+	//m := make(map[string]interface{})
+	//j, _ := json.Marshal(request)
+	//_ = json.Unmarshal(j, &m)
+	//for key, value := range m {
+	//	if value != nil { m[nm[key]] = value }
+	//	delete(m, key)
+	//}
+	//delete(m, "customer_id")
+	//
+	//fmt.Println(m)
+	//return m
+}
+

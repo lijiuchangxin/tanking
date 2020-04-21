@@ -10,7 +10,7 @@ import (
 
 type UtCustomer struct {
 	Id 					int			`json:"id"`
-	CustomerNikeName 	string		`json:"customer_nike_name" form:"customer_nike_name "`
+	CustomerNikeName 	string		`json:"customer_nike_name"`
 	Desc				string		`json:"desc"`
 	Tag 				string		`json:"tag"`
 	TelPhone 			string		`json:"tel_phone"`
@@ -124,7 +124,6 @@ func InsertCustomer(customer *UtCustomer) error {
 		return err
 	}
 	customer.Alters = append(customer.Alters, &alter)
-	fmt.Println(customer.Alters)
 	//_ = o.Commit()
 	return nil
 }
@@ -176,32 +175,45 @@ func RemoveCustomerFollow(id int) (int, bool) {
 }
 
 
-func UpdateCustomer(cid int, paras map[string]interface{}) (err error) {
+func UpdateCustomer(cid int, paras map[string]interface{}) error {
 	o := orm.NewOrm()
 	customer := &UtCustomer{Id:cid}
-	if err = o.Read(customer); err != nil { return errors.New("read error") }
+	if err := o.Read(customer); err != nil { return err }
+	customerValue := reflect.ValueOf(customer).Elem()
 
-	if err = o.Begin(); err != nil {return errors.New("work error")}
 	for key, value := range paras {
-		customerValue := reflect.ValueOf(customer).Elem()
-		if customerValue.FieldByName(key).Type() != reflect.TypeOf(value) {
-			if err := o.Rollback(); err != nil { return  errors.New("rollback error") }
-			return errors.New("para error")
+		if value != nil || value != "" {
+			oldValue := customerValue.FieldByName(key).String()
+			if value == oldValue {
+				continue
+			}
+			customerValue.FieldByName(key).Set(reflect.ValueOf(value))
+			if _, err := o.Update(customer, key); err != nil {
+				return err
+			} else {
+				// 新增变更
+				if value == "" { value = "<空>" }
+				if oldValue == "" { oldValue = "<空>"}
+				follow := &CustomerFollowUp{
+					CreateAt:     int(time.Now().Unix()),
+					UpdatedAt:    int(time.Now().Unix()),
+					// TODO 操作的客服，可能需要通过session获取
+					//UserId:       0,
+					//UserAvatar:   "",
+					//UserNickName: "",
+					Content:      fmt.Sprintf("%s %s:%s ---> %s","lzs", key, oldValue, value),
+					Customer:     customer,
+				}
+				if _, err := o.Insert(follow); err != nil { return errors.New("new customer follow up failed") }
+			}
 		}
-		customerValue.FieldByName(key).Set(reflect.ValueOf(value))
-		if _, err = o.Update(customer, key); err != nil { return errors.New("update error") }
 	}
-	if err = o.Commit(); err != nil { return errors.New("commit error") }
-
-	return
-}
-
-
-func ShowCustomerDetail(cid int) (res map[string]interface{}) {
-	o := orm.NewOrm()
-	customer := &UtCustomer{Id:cid}
-	if err := o.Read(customer); err != nil { return nil }
+	// 更新时间
+	customer.UpdatedAt = int(time.Now().Unix())
+	if _, err := o.Update(customer, "UpdatedAt"); err != nil { return err}
 	return nil
 }
+
+
 
 

@@ -8,6 +8,7 @@ import (
 	"github.com/astaxie/beego"
 )
 
+// customer控制器
 type CustomerController struct {
 	beego.Controller
 }
@@ -134,7 +135,7 @@ func (c *CustomerController)CreateCustomerFollow() {
 	return
 }
 
-// DeleteCustomerFollow删除客户跟进
+// DeleteCustomerFollow 删除客户跟进
 func (c *CustomerController)DeleteCustomerFollow() {
 	request := new(RequestDelFollow)
 	response := new(ResponseDelFollow)
@@ -147,7 +148,7 @@ func (c *CustomerController)DeleteCustomerFollow() {
 			Logs.Info("customer follow up", request.Id, "not exist")
 			response.Msg = "deleted customer follow up does not exist"
 		} else {
-			custerId, res := models.RemoveCustomerFollow(request.Id)
+			custerID, res := models.RemoveCustomerFollow(request.Id)
 			if !res {
 				Logs.Error("delete customer follow up", request.Id, "fail")
 				response.Msg = "failed to delete customer follow up"
@@ -155,7 +156,7 @@ func (c *CustomerController)DeleteCustomerFollow() {
 				Logs.Info("delete", request.Id, "success")
 				response.Code = 0
 				response.Data.Id = request.Id
-				response.Data.CustomerId = custerId
+				response.Data.CustomerId = custerID
 			}
 		}
 	} else {
@@ -167,7 +168,7 @@ func (c *CustomerController)DeleteCustomerFollow() {
 }
 
 // ShowCustomerDetail 展示客户详情，包括跟进，变更
-func (c *CustomerController)ShowCustomerDetail()  {
+func (c *CustomerController)ShowCustomerDetail() {
 	request := new(RequestShowCustomer)
 	response := new(ResponseShowCustomer)
 	response.Code = 1
@@ -194,3 +195,30 @@ func (c *CustomerController)ShowCustomerDetail()  {
 	return
 }
 
+// UpdateCustomer 修改客户详情
+func (c *CustomerController)UpdateCustomer() {
+	request := new(RequestUpdateCustomer)
+	response := new(ResponseUpdateCustomer)
+	response.Code = 1
+	response.Msg = "success"
+
+	if res := c.AnalysisAndVerify(request); res {
+		if !models.JudgeIsExists("UtCustomer", "Id", request.CustomerId) {
+			Logs.Info("ut_customer_id not exist")
+			response.Msg = "update customer failed, because customer_id dose not exist"
+		} else {
+			res := GetUpdateCustomerMap(request)
+			if err := models.UpdateCustomer(request.CustomerId, res); err == nil {
+				response.Code = 0
+			} else {
+				Logs.Info("update customer failed")
+				response.Msg = err.Error()
+			}
+		}
+	} else {
+		response.Msg = "incoming parameter error"
+	}
+	c.Data["json"] = response
+	c.ServeJSON()
+	return
+}

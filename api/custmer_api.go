@@ -109,6 +109,21 @@ type ResponseShowCustomer struct {
 	ResponseNewCustomer
 }
 
+// 修改客户请求体
+type RequestUpdateCustomer struct {
+	CustomerId	int  		`json:"customer_id"`
+	Tag			interface{}  	`json:"tag"`
+	IsVip		interface{}		`json:"is_vip"`
+	Desc		interface{}		`json:"desc"`
+	TelPhone	interface{}		`json:"tel_phone"`
+	CellPhone	interface{}		`json:"cell_phone"`
+}
+
+// 修改客户响应体
+type ResponseUpdateCustomer struct {
+	CommonResponse
+
+}
 
 //  跟进详情
 type CustomerFollowUp struct {
@@ -119,7 +134,6 @@ type CustomerFollowUp struct {
 	UserAvatar		string		`json:"user_avatar"`
 	UserNickName	string		`json:"user_nick_name"`
 }
-
 
 // 变更详情
 type CustomerAlter struct {
@@ -165,4 +179,8 @@ func (request *RequestShowCustomer)VerifyInputPara() bool {
 	return true
 }
 
+// 修改客户入参数合法性校验
+func (request *RequestUpdateCustomer)VerifyInputPara() bool {
+	return true
+}
 
