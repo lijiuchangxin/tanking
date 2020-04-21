@@ -13,16 +13,20 @@ type CustomerController struct {
 }
 
 
-// 解析参数和校验参数
+// 解析参数和校验参数,post
 func (c *CustomerController) AnalysisAndVerify(request Verify) bool {
+	if c.Ctx.Request.Method != "POST" {
+		return false
+	}
+
 	// 参数解析失败
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, request); err != nil {
 		Logs.Info("error parsing parameters")
 		return false
 	}
+
 	// 校验参数失败
 	if !request.VerifyInputPara() {
-
 		Logs.Info("input para error")
 		return false
 	}
@@ -50,9 +54,7 @@ func (c *CustomerController)CreateCustomer() {
 				Logs.Error(request.OpenApiToken, "register fail, because", err)
 				response.Msg = "failed to register customer"
 			} else {
-				Logs.Info(request.OpenApiToken, "register success")
-				response.Code = 0
-				response.UtCustomer = request.UtCustomer
+				MapCustomerDetail(response, &request.UtCustomer)
 			}
 		}
 	} else {
@@ -75,7 +77,7 @@ func (c *CustomerController)DeleteCustomer() {
 		// 通过apiToken删除客户，通过id删除客户
 		// 如果id存在，则通过id删除客户
 		// 如果apiToken存在，则通过token删除客户
-		if  !models.JudgeIsExists("UtCustomer", "Id", request.Id) && (request.OpenApiToken != "" &&
+		if  !models.JudgeIsExists("UtCustomer", "Id", request.Id) || (request.OpenApiToken != "" &&
 			!models.JudgeIsExists("UtCustomer", "OpenApiToken", request.OpenApiToken)) {
 			Logs.Info("customer", request.Id, request.OpenApiToken, "not exist")
 			response.Msg = "deleted customer does not exist"
@@ -108,7 +110,7 @@ func (c *CustomerController)CreateCustomerFollow() {
 	if res := c.AnalysisAndVerify(request); res {
 		// TODO 判断的权限以及合法性
 		//判断是否存在customer
-		if customer := models.GetCustomer2Id(request.CustomerId); customer == nil {
+		if customer := models.GetCustomerById(request.CustomerId); customer == nil {
 			Logs.Info("ut_customer_id not exist")
 			response.Msg = "the customer to be followed up dose not exist"
 		} else {
@@ -121,13 +123,7 @@ func (c *CustomerController)CreateCustomerFollow() {
 				// 添加成功，更新返回题
 				Logs.Info("new follow up success")
 				response.Code = 0
-				response.CustomerFollowUp.Id = request.CustomerFollowUp.Id
-				response.CustomerFollowUp.CreateAt = request.CustomerFollowUp.CreateAt
-				response.CustomerFollowUp.CustomerId = request.CustomerFollowUp.Customer.Id
-				response.CustomerFollowUp.UserId = request.CustomerFollowUp.UserId
-				response.CustomerFollowUp.UserNickName = request.CustomerFollowUp.UserNickName
-				response.CustomerFollowUp.UserAvatar = request.CustomerFollowUp.UserAvatar
-				response.CustomerFollowUp.Content = request.CustomerFollowUp.Content
+				MapCustomerFollow(&response.CustomerFollowUp, &request.CustomerFollowUp)
 			}
 		}
 	} else {
@@ -169,3 +165,32 @@ func (c *CustomerController)DeleteCustomerFollow() {
 	c.ServeJSON()
 	return
 }
+
+// ShowCustomerDetail 展示客户详情，包括跟进，变更
+func (c *CustomerController)ShowCustomerDetail()  {
+	request := new(RequestShowCustomer)
+	response := new(ResponseShowCustomer)
+	response.Code = 1
+	response.Msg = "success"
+	if res, err := c.GetInt("customer_id"); err == nil {
+		request.CustomerId = res
+		if res := request.VerifyInputPara(); res {
+			if res := models.GetCustomerById(request.CustomerId); res == nil {
+				Logs.Info("customer dose not exist, customer_id:", request.CustomerId)
+				response.Msg = "customer dose not exist"
+			} else {
+				response.Code = 0
+				MapCustomerDetail(&response.ResponseNewCustomer, res)
+				//response.UtCustomer = *res
+			}
+		} else {
+			response.Msg = "incoming parameter error"
+		}
+	} else {
+		response.Msg = "incoming parameter error"
+	}
+	c.Data["json"] = response
+	c.ServeJSON()
+	return
+}
+

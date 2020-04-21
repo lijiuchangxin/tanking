@@ -34,8 +34,8 @@ type UtCustomer struct {
 	FirstContactAt		int			`json:"first_contact_im_at"`
 	FirstContactImAt	int			`json:"last_contact_im_at"`
 	OpenApiToken		string		`json:"open_api_token"`
-	Alters 				[]*CustomerAlteration 	`orm:"reverse(many)"`
-	FollowUps			[]*CustomerFollowUp		`orm:"reverse(many)"`
+	Alters 				[]*CustomerAlteration 	`orm:"reverse(many)" json:"alters"`
+	FollowUps			[]*CustomerFollowUp		`orm:"reverse(many)" json:"follow_up"`
 }
 
 
@@ -79,13 +79,22 @@ func JudgeIsExists(table, col string, res interface{}) bool {
 
 
 // 通过客户id得到dbCol
-func GetCustomer2Id(id int) *UtCustomer {
+func GetCustomerById(id int) *UtCustomer {
 	customer := &UtCustomer{Id:id}
 	o := orm.NewOrm()
 	if err := o.Read(customer); err != nil { return nil }
+	GetFollowAndAlterByCid(customer, o)
 	return customer
 }
 
+func GetFollowAndAlterByCid	(customer *UtCustomer, o orm.Ormer)  {
+	var alters []*CustomerAlteration
+	var follows []*CustomerFollowUp
+	o.QueryTable("CustomerAlteration").Filter("Customer", customer.Id).RelatedSel().All(&alters)
+	o.QueryTable("CustomerFollowUp").Filter("Customer", customer.Id).RelatedSel().All(&follows)
+	customer.FollowUps = follows
+	customer.Alters = alters
+}
 
 // InsertCustomer 新增客户详情
 func InsertCustomer(customer *UtCustomer) error {
@@ -114,6 +123,8 @@ func InsertCustomer(customer *UtCustomer) error {
 		//_ = o.Rollback()
 		return err
 	}
+	customer.Alters = append(customer.Alters, &alter)
+	fmt.Println(customer.Alters)
 	//_ = o.Commit()
 	return nil
 }
