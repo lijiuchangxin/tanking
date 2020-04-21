@@ -201,12 +201,14 @@ func (c *CustomerController)UpdateCustomer() {
 	response := new(ResponseUpdateCustomer)
 	response.Code = 1
 	response.Msg = "success"
-
+	// 校验参数是否正确
 	if res := c.AnalysisAndVerify(request); res {
+		// 判断customer是否存在
 		if !models.JudgeIsExists("UtCustomer", "Id", request.CustomerId) {
 			Logs.Info("ut_customer_id not exist")
 			response.Msg = "update customer failed, because customer_id dose not exist"
 		} else {
+			// 获取入参映射
 			res := GetUpdateCustomerMap(request)
 			if err := models.UpdateCustomer(request.CustomerId, res); err == nil {
 				response.Code = 0

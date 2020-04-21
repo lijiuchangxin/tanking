@@ -181,6 +181,8 @@ func (request *RequestShowCustomer)VerifyInputPara() bool {
 
 // 修改客户入参数合法性校验
 func (request *RequestUpdateCustomer)VerifyInputPara() bool {
+	//  删除的客户id必须>0
+	if request.CustomerId  <= 0 { return false }
 	return true
 }
 

@@ -68,7 +68,10 @@ func MapCustomerDetail(response *ResponseNewCustomer, request *model.UtCustomer)
 	response.UtCustomer.Alters = alterMap
 }
 
+
+// func GetUpdateCustomerMap(request *RequestUpdateCustomer) map[string]interface{} {将结构体映射为字典
 func GetUpdateCustomerMap(request *RequestUpdateCustomer) map[string]interface{} {
+	// 这个字典主要是为了最后更新值供reflect使用 对应
 	nm := map[string]string{
 		"tag"			:"Tag",
 		"is_vip"		:"IsVip",
@@ -76,10 +79,15 @@ func GetUpdateCustomerMap(request *RequestUpdateCustomer) map[string]interface{}
 		"tel_phone"		:"TelPhone",
 		"cell_phone"	:"cell_phone",
 	}
-	m := make(map[string]interface{})
+
+	// return结果
 	res := make(map[string]interface{})
+
+	// 存储 struct-- > map
+	m := make(map[string]interface{})
 	j, _ := json.Marshal(request)
 	_ = json.Unmarshal(j, &m)
+	// 用不到
 	delete(m, "customer_id")
 	for key, value := range m {
 		if value != nil { res[nm[key]] = value }

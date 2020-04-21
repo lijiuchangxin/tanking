@@ -83,14 +83,18 @@ func GetCustomerById(id int) *UtCustomer {
 	customer := &UtCustomer{Id:id}
 	o := orm.NewOrm()
 	if err := o.Read(customer); err != nil { return nil }
+	// 传入customer为指针, 会直接修改
 	GetFollowAndAlterByCid(customer, o)
 	return customer
 }
 
+// 获得customer下的所有变更与跟进
 func GetFollowAndAlterByCid	(customer *UtCustomer, o orm.Ormer)  {
 	var alters []*CustomerAlteration
 	var follows []*CustomerFollowUp
+	// 获得所有的变更
 	o.QueryTable("CustomerAlteration").Filter("Customer", customer.Id).RelatedSel().All(&alters)
+	// 获得所有的跟进
 	o.QueryTable("CustomerFollowUp").Filter("Customer", customer.Id).RelatedSel().All(&follows)
 	customer.FollowUps = follows
 	customer.Alters = alters
@@ -174,24 +178,30 @@ func RemoveCustomerFollow(id int) (int, bool) {
 	return -1, false
 }
 
-
+// UpdateCustomer 更新客户详情
 func UpdateCustomer(cid int, paras map[string]interface{}) error {
 	o := orm.NewOrm()
 	customer := &UtCustomer{Id:cid}
 	if err := o.Read(customer); err != nil { return err }
+	// 同过反射完成更新
 	customerValue := reflect.ValueOf(customer).Elem()
 
+	// 通过循环更新值与插入变更
 	for key, value := range paras {
 		if value != nil || value != "" {
+			// 先存储旧值 后面要新增变更summary用的到
 			oldValue := customerValue.FieldByName(key).String()
+			// 如果新传入的值与旧值相同 跳出此次徐怒换
 			if value == oldValue {
 				continue
 			}
+			// 更新值
 			customerValue.FieldByName(key).Set(reflect.ValueOf(value))
 			if _, err := o.Update(customer, key); err != nil {
 				return err
 			} else {
 				// 新增变更
+				// 格式化summary
 				if value == "" { value = "<空>" }
 				if oldValue == "" { oldValue = "<空>"}
 				follow := &CustomerAlteration{
