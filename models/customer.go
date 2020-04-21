@@ -194,14 +194,13 @@ func UpdateCustomer(cid int, paras map[string]interface{}) error {
 				// 新增变更
 				if value == "" { value = "<空>" }
 				if oldValue == "" { oldValue = "<空>"}
-				follow := &CustomerFollowUp{
-					CreateAt:     int(time.Now().Unix()),
-					UpdatedAt:    int(time.Now().Unix()),
+				follow := &CustomerAlteration{
+					AlterTime:     int(time.Now().Unix()),
 					// TODO 操作的客服，可能需要通过session获取
 					//UserId:       0,
 					//UserAvatar:   "",
 					//UserNickName: "",
-					Content:      fmt.Sprintf("%s %s:%s ---> %s","lzs", key, oldValue, value),
+					Summary:      fmt.Sprintf("%s %s:%s ---> %s","lzs", key, oldValue, value),
 					Customer:     customer,
 				}
 				if _, err := o.Insert(follow); err != nil { return errors.New("new customer follow up failed") }
