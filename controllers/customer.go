@@ -58,7 +58,7 @@ func (c *CustomerController)CreateCustomer() {
 				response.Msg = "failed to register customer"
 				response.Code = 2
 			} else {
-				MapCustomerDetail(response.CustomerDetail, &request.UtCustomer)
+				MapCustomerDetail(&response.CustomerDetail, &request.UtCustomer)
 			}
 		}
 	} else {
@@ -250,6 +250,7 @@ func (c *CustomerController)CustomerListByPage() {
 	//if res := c.AnalysisAndVerify(request); res {
 	if res := request.VerifyInputPara(); res {
 		if res, count, err := models.CustomerListPageOut(request.CurrPage, request.PageSize); err != nil {
+			response.Code = 2
 			if count == 0 {
 				response.Msg = "error in getting total number of customer details"
 			} else {
@@ -262,7 +263,37 @@ func (c *CustomerController)CustomerListByPage() {
 				customerDetail := new(CustomerDetail)
 				MapCustomerDetail(customerDetail, customer)
 				response.Customers[num] = customerDetail
+				response.Code = 0
 				//response.CustomerList = append(response.CustomerList, customerDetail)
+			}
+		}
+	} else {
+		response.Msg = "incoming parameter error"
+	}
+	c.Data["json"] = response
+	c.ServeJSON()
+	return
+}
+
+// CustomerSearch
+func (c *CustomerController)CustomerSearch()  {
+	request := new(RequestSearchCustomer)
+	response := new(ResponseSearchCustomer)
+	InitResponse(&response.CommonResponse)
+
+	// 校验参数是否正确
+	if res := c.AnalysisAndVerify(request); res {
+		if res, err := models.CustomerSearchByFiled(request.FiledName, request.Value); err != nil {
+			response.Code = 2
+			response.Msg = "customer query failed"
+		} else {
+			m := make(map[int]*CustomerDetail)
+			response.Customers = m
+			for num, customer := range res {
+			customerDetail := new(CustomerDetail)
+			MapCustomerDetail(customerDetail, customer)
+			response.Customers[num] = customerDetail
+			response.Code = 0
 			}
 		}
 	} else {

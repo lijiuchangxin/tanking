@@ -14,11 +14,5 @@ func init() {
 	beego.Router("/api/v2/admin/customer/show", &controllers.CustomerController{}, "get:ShowCustomerDetail")
 	beego.Router("/api/v2/admin/customer/update", &controllers.CustomerController{}, "post:UpdateCustomer")
 	beego.Router("/api/v2/admin/customer/list", &controllers.CustomerController{}, "get:CustomerListByPage")
-
-
-
-	//beego.Router("/api/v2/admin/show-customer", &controllers.CustomerController{}, "get:ShowCustomer")
-	//beego.Router("/api/v2/admin/get-customers", &controllers.CustomerController{}, "get:PageCustomers")
-	//beego.Router("/api/v2/admin/update-customer", &controllers.CustomerController{}, "post:UpdateCustomer")
-	//beego.Router("/api/v2/admin/search-customer", &controllers.CustomerController{}, "post:SearchCustomer")
+	beego.Router("/api/v2/admin/customer/search", &controllers.CustomerController{}, "post:CustomerSearch")
 }

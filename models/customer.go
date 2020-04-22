@@ -106,7 +106,7 @@ func InsertCustomer(customer *UtCustomer) error {
 	// 创建时间
 	customer.CreateAt, customer.UpdatedAt = createTime, createTime
 	// api用户昵称
-	if customer.OpenApiToken != "" {
+	if customer.OpenApiToken != "" && customer.CustomerNikeName == "" {
 		customer.CustomerNikeName = fmt.Sprintf("API匿名客户(%s)", customer.OpenApiToken)
 	}
 	//_ = o.Begin()
@@ -229,9 +229,7 @@ func UpdateCustomer(cid int, paras map[string]interface{}) error {
 	return nil
 }
 
-
-// CustomerListPageOut
-//func CustomerListPageOut(request *api.RequestCustomerList) (res api.CustomerDetailOut, count int64, err error) {
+// CustomerListPageOut 分条从数据库中取数据
 func CustomerListPageOut(CurrPage, PageSize int) ([]*UtCustomer, int64, error) {
 	currPage := 1
 	pageSize := 10
@@ -243,23 +241,26 @@ func CustomerListPageOut(CurrPage, PageSize int) ([]*UtCustomer, int64, error) {
 	if CurrPage != -1 { currPage = CurrPage }
 	if PageSize != -1 { pageSize = PageSize }
 	o := orm.NewOrm()
+	// 计算偏移
 	offset := (currPage - 1) * pageSize
 	qs := o.QueryTable("UtCustomer")
 	count, err = qs.Count()
 	if err == nil {
+		// 查询
 		_, err = qs.OrderBy("-CreateAt").Limit(pageSize, offset).RelatedSel().All(&res)
 	}
 	return res, count, err
-
-	//if count, err = qs.Count(); err == nil {
-	//	_, err = qs.OrderBy("-CreateAt").Limit(pageSize, offset).RelatedSel().All(&res)
-	//	fmt.Println("A", count, err)
-	//} else {
-	//	fmt.Println("B", count, err)
-	//}
-	//return res, count, err
 }
 
+
+// CustomerSearchByFiled 实现简单数据查找 下期再完善
+func CustomerSearchByFiled(filed, value string) ([]*UtCustomer, error) {
+	var res []*UtCustomer
+	o := orm.NewOrm()
+	qs := o.QueryTable("UtCustomer")
+	_, err := qs.Filter(filed, value).All(&res)
+	return res, err
+}
 
 
 

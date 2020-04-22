@@ -4,6 +4,7 @@ import (
 	. "customer_managenment/api"
 	model "customer_managenment/models"
 	"encoding/json"
+	"fmt"
 )
 
 // 映射客户变更
@@ -27,6 +28,8 @@ func MapCustomerFollow(response *CustomerFollowUp, request *model.CustomerFollow
 // 映射客户详情
 func MapCustomerDetail(response *CustomerDetail, request *model.UtCustomer) {
 	//response.Code = 0
+	fmt.Println("request", request.Id)
+	fmt.Println("response", response.Id)
 	response.Id = request.Id
 	response.CustomerNikeName = request.CustomerNikeName
 	response.Desc = request.Desc

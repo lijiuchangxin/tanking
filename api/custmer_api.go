@@ -21,7 +21,7 @@ type CommonResponse struct {
 type ResponseNewCustomer struct {
 	CommonResponse
 	//Id 	  int		   	`json:"id"`
-	*CustomerDetail			`json:"customer"`
+	CustomerDetail			`json:"customer"`
 	//UtCustomer  struct{
 	//	Id 					int			`json:"id"`
 	//	CustomerNikeName 	string		`json:"customer_nike_name" form:"customer_nike_name "`
@@ -144,7 +144,26 @@ type RequestCustomerList struct {
 type ResponseCustomerList struct {
 	CommonResponse
 	Customers    map[int]*CustomerDetail    `json:"customers"`
-	//CustomerList []*CustomerDetail	`json:"customer_list"`
+}
+
+// 搜索客户请求体
+type RequestSearchCustomer struct {
+	FiledName		string		`json:"filed_name"`
+	Value			string		`json:"value"`
+	//SearchConditions	[]*CustomerSearch `json:"all_conditions"`
+}
+
+// 客户列表返回体
+type ResponseSearchCustomer struct {
+	CommonResponse
+	Customers    map[int]*CustomerDetail    `json:"customers"`
+}
+
+// 搜索详情
+type CustomerSearch struct {
+	FiledName		string		`json:"filed_name"`
+	Operation		string		`json:"operation"`
+	Value			string		`json:"value"`
 }
 
 //  跟进详情
@@ -249,3 +268,13 @@ func (request *RequestCustomerList)VerifyInputPara() bool {
 	return true
 }
 
+// 客户查询
+func (request *RequestSearchCustomer)VerifyInputPara() bool {
+	slice := []string{"customer_nike_name", "tel_phone", "cell_phone", "api_token"}
+	for _, res := range slice {
+		if res == request.FiledName {
+			return true
+		}
+	}
+	return false
+}
