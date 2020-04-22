@@ -38,10 +38,12 @@ func (c *CustomerController) AnalysisAndVerify(request Verify) bool {
 // NewCustomer 创建客户
 func (c *CustomerController)CreateCustomer() {
 	// 实例新增返回体，并默认初始值
-	response := new(ResponseNewCustomer)
-	response.Code = 1
-	response.Msg = "success"
 	request := new(RequestNewCustomer)
+	response := new(ResponseNewCustomer)
+	InitResponse(&response.CommonResponse)
+	//response.Code = 1
+	//response.Msg = "success"
+
 	// 解析校验输入的参数
 	if res := c.AnalysisAndVerify(request); res {
 		// 判断该 OpenApiToken 是否已有注册
@@ -56,7 +58,7 @@ func (c *CustomerController)CreateCustomer() {
 				response.Msg = "failed to register customer"
 				response.Code = 2
 			} else {
-				MapCustomerDetail(response, &request.UtCustomer)
+				MapCustomerDetail(response.CustomerDetail, &request.UtCustomer)
 			}
 		}
 	} else {
@@ -70,10 +72,11 @@ func (c *CustomerController)CreateCustomer() {
 
 // DeleteCustomer 删除客户
 func (c *CustomerController)DeleteCustomer() {
-	response := new(ResponseDelCustomer)
-	response.Code = 1
-	response.Msg = "success"
 	request := new(RequestDelCustomer)
+	response := new(ResponseDelCustomer)
+	InitResponse(&response.CommonResponse)
+	//response.Code = 1
+	//response.Msg = "success"
 	// 解析校验输入的参数
 	if res := c.AnalysisAndVerify(request); res {
 		// 通过apiToken删除客户，通过id删除客户
@@ -107,8 +110,9 @@ func (c *CustomerController)DeleteCustomer() {
 func (c *CustomerController)CreateCustomerFollow() {
 	request := new(RequestNewFollow)
 	response := new(ResponseNewFollow)
-	response.Code = 1
-	response.Msg = "success"
+	InitResponse(&response.CommonResponse)
+	//response.Code = 1
+	//response.Msg = "success"
 	// 解析校验输入的参数
 	if res := c.AnalysisAndVerify(request); res {
 		// TODO 判断的权限以及合法性
@@ -142,8 +146,9 @@ func (c *CustomerController)CreateCustomerFollow() {
 func (c *CustomerController)DeleteCustomerFollow() {
 	request := new(RequestDelFollow)
 	response := new(ResponseDelFollow)
-	response.Code = 1
-	response.Msg = "success"
+	InitResponse(&response.CommonResponse)
+	//response.Code = 1
+	//response.Msg = "success"
 	// 解析校验输入的参数
 	if res := c.AnalysisAndVerify(request); res {
 		// 通过跟进的id判断跟进是否存在
@@ -175,8 +180,9 @@ func (c *CustomerController)DeleteCustomerFollow() {
 func (c *CustomerController)ShowCustomerDetail() {
 	request := new(RequestShowCustomer)
 	response := new(ResponseShowCustomer)
-	response.Code = 1
-	response.Msg = "success"
+	InitResponse(&response.CommonResponse)
+	//response.Code = 1
+	//response.Msg = "success"
 	if res, err := c.GetInt("customer_id"); err == nil {
 		request.CustomerId = res
 		if res := request.VerifyInputPara(); res {
@@ -185,7 +191,7 @@ func (c *CustomerController)ShowCustomerDetail() {
 				response.Msg = "customer dose not exist"
 			} else {
 				response.Code = 0
-				MapCustomerDetail(&response.ResponseNewCustomer, res)
+				MapCustomerDetail(&response.CustomerDetail, res)
 				//response.UtCustomer = *res
 			}
 		} else {
@@ -203,8 +209,9 @@ func (c *CustomerController)ShowCustomerDetail() {
 func (c *CustomerController)UpdateCustomer() {
 	request := new(RequestUpdateCustomer)
 	response := new(ResponseUpdateCustomer)
-	response.Code = 1
-	response.Msg = "success"
+	InitResponse(&response.CommonResponse)
+	//response.Code = 1
+	//response.Msg = "success"
 	// 校验参数是否正确
 	if res := c.AnalysisAndVerify(request); res {
 		// 判断customer是否存在
@@ -220,6 +227,42 @@ func (c *CustomerController)UpdateCustomer() {
 				Logs.Info("update customer failed")
 				response.Msg = err.Error()
 				response.Code = 2
+			}
+		}
+	} else {
+		response.Msg = "incoming parameter error"
+	}
+	c.Data["json"] = response
+	c.ServeJSON()
+	return
+}
+
+//CustomerListByPage 分页查询列表详情
+func (c *CustomerController)CustomerListByPage() {
+	request := new(RequestCustomerList)
+	response := new(ResponseCustomerList)
+	InitResponse(&response.CommonResponse)
+
+	request.CurrPage, _ = c.GetInt("curr_page")
+	request.PageSize, _ = c.GetInt("page_size")
+
+	// 校验入参是否正确
+	//if res := c.AnalysisAndVerify(request); res {
+	if res := request.VerifyInputPara(); res {
+		if res, count, err := models.CustomerListPageOut(request.CurrPage, request.PageSize); err != nil {
+			if count == 0 {
+				response.Msg = "error in getting total number of customer details"
+			} else {
+				response.Msg = "failed to get customer details on page"
+			}
+		} else {
+			m := make(map[int]*CustomerDetail)
+			response.Customers = m
+			for num, customer := range res {
+				customerDetail := new(CustomerDetail)
+				MapCustomerDetail(customerDetail, customer)
+				response.Customers[num] = customerDetail
+				//response.CustomerList = append(response.CustomerList, customerDetail)
 			}
 		}
 	} else {

@@ -62,7 +62,6 @@ type CustomerAlteration struct {
 	Summary			string		`json:"summary"`
 	FeedType		string		`json:"feed_type"`
 	Customer		*UtCustomer	`orm:"rel(fk);cascade"`
-
 }
 
 
@@ -196,6 +195,13 @@ func UpdateCustomer(cid int, paras map[string]interface{}) error {
 				continue
 			}
 			// 更新值
+			if fmt.Sprintf("%T", value) == "float64" {
+				if fmt.Sprintf("%v", value) == "1" {
+					value = 1
+				} else {
+					value = 0
+				}
+			}
 			customerValue.FieldByName(key).Set(reflect.ValueOf(value))
 			if _, err := o.Update(customer, key); err != nil {
 				return err
@@ -222,6 +228,38 @@ func UpdateCustomer(cid int, paras map[string]interface{}) error {
 	if _, err := o.Update(customer, "UpdatedAt"); err != nil { return err}
 	return nil
 }
+
+
+// CustomerListPageOut
+//func CustomerListPageOut(request *api.RequestCustomerList) (res api.CustomerDetailOut, count int64, err error) {
+func CustomerListPageOut(CurrPage, PageSize int) ([]*UtCustomer, int64, error) {
+	currPage := 1
+	pageSize := 10
+	var (
+		count 	int64			// 总条数
+		err 	error			// 错误
+		res		[]*UtCustomer	// 结果
+	)
+	if CurrPage != -1 { currPage = CurrPage }
+	if PageSize != -1 { pageSize = PageSize }
+	o := orm.NewOrm()
+	offset := (currPage - 1) * pageSize
+	qs := o.QueryTable("UtCustomer")
+	count, err = qs.Count()
+	if err == nil {
+		_, err = qs.OrderBy("-CreateAt").Limit(pageSize, offset).RelatedSel().All(&res)
+	}
+	return res, count, err
+
+	//if count, err = qs.Count(); err == nil {
+	//	_, err = qs.OrderBy("-CreateAt").Limit(pageSize, offset).RelatedSel().All(&res)
+	//	fmt.Println("A", count, err)
+	//} else {
+	//	fmt.Println("B", count, err)
+	//}
+	//return res, count, err
+}
+
 
 
 

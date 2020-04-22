@@ -25,33 +25,33 @@ func MapCustomerFollow(response *CustomerFollowUp, request *model.CustomerFollow
 }
 
 // 映射客户详情
-func MapCustomerDetail(response *ResponseNewCustomer, request *model.UtCustomer) {
-	response.Code = 0
-	response.UtCustomer.Id = request.Id
-	response.UtCustomer.CustomerNikeName = request.CustomerNikeName
-	response.UtCustomer.Desc = request.Desc
-	response.UtCustomer.Tag = request.Tag
-	response.UtCustomer.TelPhone = request.TelPhone
-	response.UtCustomer.CellPhone = request.CellPhone
-	response.UtCustomer.Email = request.Email
-	response.UtCustomer.IsVip = request.IsVip
-	response.UtCustomer.Province = request.Province
-	response.UtCustomer.City = request.City
-	response.UtCustomer.SourceChannel = request.SourceChannel
-	response.UtCustomer.CreateAt = request.CreateAt
-	response.UtCustomer.UpdatedAt = request.UpdatedAt
-	response.UtCustomer.OrganizationName = request.OrganizationName
-	response.UtCustomer.OrganizationId = request.OrganizationId
-	response.UtCustomer.OwnerGroupId = request.OwnerGroupId
-	response.UtCustomer.OwnerGroupName = request.OwnerGroupName
-	response.UtCustomer.OwnerId = request.OwnerId
-	response.UtCustomer.OwnerName = request.OwnerName
-	response.UtCustomer.TicketCount = request.TicketCount
-	response.UtCustomer.LastContactAt = request.LastContactAt
-	response.UtCustomer.LastContactImAt = request.LastContactImAt
-	response.UtCustomer.FirstContactAt = request.FirstContactAt
-	response.UtCustomer.FirstContactImAt = request.FirstContactImAt
-	response.UtCustomer.OpenApiToken = request.OpenApiToken
+func MapCustomerDetail(response *CustomerDetail, request *model.UtCustomer) {
+	//response.Code = 0
+	response.Id = request.Id
+	response.CustomerNikeName = request.CustomerNikeName
+	response.Desc = request.Desc
+	response.Tag = request.Tag
+	response.TelPhone = request.TelPhone
+	response.CellPhone = request.CellPhone
+	response.Email = request.Email
+	response.IsVip = request.IsVip
+	response.Province = request.Province
+	response.City = request.City
+	response.SourceChannel = request.SourceChannel
+	response.CreateAt = request.CreateAt
+	response.UpdatedAt = request.UpdatedAt
+	response.OrganizationName = request.OrganizationName
+	response.OrganizationId = request.OrganizationId
+	response.OwnerGroupId = request.OwnerGroupId
+	response.OwnerGroupName = request.OwnerGroupName
+	response.OwnerId = request.OwnerId
+	response.OwnerName = request.OwnerName
+	response.TicketCount = request.TicketCount
+	response.LastContactAt = request.LastContactAt
+	response.LastContactImAt = request.LastContactImAt
+	response.FirstContactAt = request.FirstContactAt
+	response.FirstContactImAt = request.FirstContactImAt
+	response.OpenApiToken = request.OpenApiToken
 	alterMap := make(map[int]*CustomerAlter)
 	for _, alterDetail := range request.Alters {
 		alter := new(CustomerAlter)
@@ -64,8 +64,8 @@ func MapCustomerDetail(response *ResponseNewCustomer, request *model.UtCustomer)
 		MapCustomerFollow(follow, followDetail)
 		followMap[follow.Id] = follow
 	}
-	response.UtCustomer.FollowUp = followMap
-	response.UtCustomer.Alters = alterMap
+	response.FollowUp = followMap
+	response.Alters = alterMap
 }
 
 
@@ -107,4 +107,8 @@ func GetUpdateCustomerMap(request *RequestUpdateCustomer) map[string]interface{}
 	//fmt.Println(m)
 	//return m
 }
+
+//func ()  {
+//
+//}
 

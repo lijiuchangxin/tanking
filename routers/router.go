@@ -13,6 +13,7 @@ func init() {
 	beego.Router("/api/v2/admin/customer/delete-follow", &controllers.CustomerController{}, "post:DeleteCustomerFollow")
 	beego.Router("/api/v2/admin/customer/show", &controllers.CustomerController{}, "get:ShowCustomerDetail")
 	beego.Router("/api/v2/admin/customer/update", &controllers.CustomerController{}, "post:UpdateCustomer")
+	beego.Router("/api/v2/admin/customer/list", &controllers.CustomerController{}, "get:CustomerListByPage")
 
 
 

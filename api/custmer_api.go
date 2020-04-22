@@ -2,6 +2,7 @@ package api
 
 import (
 	"customer_managenment/models"
+	"fmt"
 )
 
 // 校验输入参数是否正确
@@ -20,35 +21,36 @@ type CommonResponse struct {
 type ResponseNewCustomer struct {
 	CommonResponse
 	//Id 	  int		   	`json:"id"`
-	UtCustomer  struct{
-		Id 					int			`json:"id"`
-		CustomerNikeName 	string		`json:"customer_nike_name" form:"customer_nike_name "`
-		Desc				string		`json:"desc"`
-		Tag 				string		`json:"tag"`
-		TelPhone 			string		`json:"tel_phone"`
-		CellPhone 			string		`json:"cell_phone"`
-		Email 				string		`json:"email"`
-		IsVip 				int			`json:"is_vip"`
-		Province  			string		`json:"province"`
-		City 				string		`json:"city"`
-		SourceChannel		string		`json:"source_channel"`
-		CreateAt			int			`json:"create_at"`
-		UpdatedAt			int			`json:"updated_at"`
-		OrganizationName	string		`json:"organization _id"`
-		OrganizationId		int			`json:"organization _name"`
-		OwnerGroupId		int			`json:"owner_group_id"`
-		OwnerGroupName		string		`json:"owner_group_name "`
-		OwnerId				int			`json:"owner_id"`
-		OwnerName			string		`json:"owner_name"`
-		TicketCount			int			`json:"ticket_count"`
-		LastContactAt		int			`json:"last_contact_at"`
-		LastContactImAt		int			`json:"first_contact_at"`
-		FirstContactAt		int			`json:"first_contact_im_at"`
-		FirstContactImAt	int			`json:"last_contact_im_at"`
-		OpenApiToken		string		`json:"open_api_token"`
-		Alters 				interface{}	`json:"alters"`
-		FollowUp 			interface{}	`json:"follow_up"`
-	}
+	*CustomerDetail			`json:"customer"`
+	//UtCustomer  struct{
+	//	Id 					int			`json:"id"`
+	//	CustomerNikeName 	string		`json:"customer_nike_name" form:"customer_nike_name "`
+	//	Desc				string		`json:"desc"`
+	//	Tag 				string		`json:"tag"`
+	//	TelPhone 			string		`json:"tel_phone"`
+	//	CellPhone 			string		`json:"cell_phone"`
+	//	Email 				string		`json:"email"`
+	//	IsVip 				int			`json:"is_vip"`
+	//	Province  			string		`json:"province"`
+	//	City 				string		`json:"city"`
+	//	SourceChannel		string		`json:"source_channel"`
+	//	CreateAt			int			`json:"create_at"`
+	//	UpdatedAt			int			`json:"updated_at"`
+	//	OrganizationName	string		`json:"organization _id"`
+	//	OrganizationId		int			`json:"organization _name"`
+	//	OwnerGroupId		int			`json:"owner_group_id"`
+	//	OwnerGroupName		string		`json:"owner_group_name "`
+	//	OwnerId				int			`json:"owner_id"`
+	//	OwnerName			string		`json:"owner_name"`
+	//	TicketCount			int			`json:"ticket_count"`
+	//	LastContactAt		int			`json:"last_contact_at"`
+	//	LastContactImAt		int			`json:"first_contact_at"`
+	//	FirstContactAt		int			`json:"first_contact_im_at"`
+	//	FirstContactImAt	int			`json:"last_contact_im_at"`
+	//	OpenApiToken		string		`json:"open_api_token"`
+	//	Alters 				interface{}	`json:"alters"`
+	//	FollowUp 			interface{}	`json:"follow_up"`
+	//} `json:"customer"`
 }
 
 // 新增客户请求体
@@ -106,10 +108,12 @@ type RequestShowCustomer struct {
 
 // 客户详情返回体
 type ResponseShowCustomer struct {
-	ResponseNewCustomer
+	CommonResponse
+	CustomerDetail	`json:"customer"`
 }
 
 // 修改客户请求体
+// 使用interface的原因 是因为可以通过零值判断是否传入参
 type RequestUpdateCustomer struct {
 	CustomerId	int  		`json:"customer_id"`
 	Tag			interface{}  	`json:"tag"`
@@ -122,7 +126,25 @@ type RequestUpdateCustomer struct {
 // 修改客户响应体
 type ResponseUpdateCustomer struct {
 	CommonResponse
+}
 
+// 初始化公共返回题
+func InitResponse(comm *CommonResponse)  {
+	comm.Code = 1
+	comm.Msg = "success"
+}
+
+// 客户列表请求体
+type RequestCustomerList struct {
+	CurrPage		int		`json:"curr_page"`
+	PageSize		int		`json:"page_size"`
+}
+
+// 客户列表返回体
+type ResponseCustomerList struct {
+	CommonResponse
+	Customers    map[int]*CustomerDetail    `json:"customers"`
+	//CustomerList []*CustomerDetail	`json:"customer_list"`
 }
 
 //  跟进详情
@@ -142,6 +164,38 @@ type CustomerAlter struct {
 	UserNickName 	string		`json:"user_nike_name"`
 	AlterTime		int			`json:"alter_time"`
 	Summary			string		`json:"summary"`
+}
+
+
+// 客户详情
+type CustomerDetail struct{
+	Id 					int			`json:"id"`
+	CustomerNikeName 	string		`json:"customer_nike_name" form:"customer_nike_name "`
+	Desc				string		`json:"desc"`
+	Tag 				string		`json:"tag"`
+	TelPhone 			string		`json:"tel_phone"`
+	CellPhone 			string		`json:"cell_phone"`
+	Email 				string		`json:"email"`
+	IsVip 				int			`json:"is_vip"`
+	Province  			string		`json:"province"`
+	City 				string		`json:"city"`
+	SourceChannel		string		`json:"source_channel"`
+	CreateAt			int			`json:"create_at"`
+	UpdatedAt			int			`json:"updated_at"`
+	OrganizationName	string		`json:"organization _id"`
+	OrganizationId		int			`json:"organization _name"`
+	OwnerGroupId		int			`json:"owner_group_id"`
+	OwnerGroupName		string		`json:"owner_group_name "`
+	OwnerId				int			`json:"owner_id"`
+	OwnerName			string		`json:"owner_name"`
+	TicketCount			int			`json:"ticket_count"`
+	LastContactAt		int			`json:"last_contact_at"`
+	LastContactImAt		int			`json:"first_contact_at"`
+	FirstContactAt		int			`json:"first_contact_im_at"`
+	FirstContactImAt	int			`json:"last_contact_im_at"`
+	OpenApiToken		string		`json:"open_api_token"`
+	Alters 				interface{}	`json:"alters"`
+	FollowUp 			interface{}	`json:"follow_up"`
 }
 
 // 校验新增客户跟进入参合法性
@@ -183,6 +237,15 @@ func (request *RequestShowCustomer)VerifyInputPara() bool {
 func (request *RequestUpdateCustomer)VerifyInputPara() bool {
 	//  删除的客户id必须>0
 	if request.CustomerId  <= 0 { return false }
+	// 传入的vip必须为数字
+	if request.IsVip != nil && fmt.Sprintf("%T", request.IsVip) != "float64"{ return false }
+	return true
+}
+
+// 分页查询客户列表入参合法性校验
+func (request *RequestCustomerList)VerifyInputPara() bool {
+	//  删除的客户id必须>0
+	//if request.CurrPage  <= 0 { return false }
 	return true
 }
 
