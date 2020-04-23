@@ -58,6 +58,7 @@ func (c *CustomerController)CreateCustomer() {
 				response.Msg = "failed to register customer"
 				response.Code = 2
 			} else {
+				response.Code = 0
 				MapCustomerDetail(&response.CustomerDetail, &request.UtCustomer)
 			}
 		}
@@ -289,11 +290,11 @@ func (c *CustomerController)CustomerSearch()  {
 		} else {
 			m := make(map[int]*CustomerDetail)
 			response.Customers = m
-			for num, customer := range res {
-			customerDetail := new(CustomerDetail)
-			MapCustomerDetail(customerDetail, customer)
-			response.Customers[num] = customerDetail
 			response.Code = 0
+			for num, customer := range res {
+				customerDetail := new(CustomerDetail)
+				MapCustomerDetail(customerDetail, customer)
+				response.Customers[num] = customerDetail
 			}
 		}
 	} else {

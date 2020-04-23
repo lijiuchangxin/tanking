@@ -3,3 +3,4 @@ go.mod
 log
 customer_managenment
 go.sum
+*.pyc

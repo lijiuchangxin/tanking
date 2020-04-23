@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	"gowebsite/apps/admin/customer_admin/models"
+	"customer_managenment/models"
 )
 
 // 校验输入参数是否正确
