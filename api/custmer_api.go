@@ -1,8 +1,8 @@
 package api
 
 import (
-	"customer_managenment/models"
 	"fmt"
+	"gowebsite/apps/admin/customer_admin/models"
 )
 
 // 校验输入参数是否正确
@@ -20,37 +20,7 @@ type CommonResponse struct {
 // 新增客户返回体
 type ResponseNewCustomer struct {
 	CommonResponse
-	//Id 	  int		   	`json:"id"`
 	CustomerDetail			`json:"customer"`
-	//UtCustomer  struct{
-	//	Id 					int			`json:"id"`
-	//	CustomerNikeName 	string		`json:"customer_nike_name" form:"customer_nike_name "`
-	//	Desc				string		`json:"desc"`
-	//	Tag 				string		`json:"tag"`
-	//	TelPhone 			string		`json:"tel_phone"`
-	//	CellPhone 			string		`json:"cell_phone"`
-	//	Email 				string		`json:"email"`
-	//	IsVip 				int			`json:"is_vip"`
-	//	Province  			string		`json:"province"`
-	//	City 				string		`json:"city"`
-	//	SourceChannel		string		`json:"source_channel"`
-	//	CreateAt			int			`json:"create_at"`
-	//	UpdatedAt			int			`json:"updated_at"`
-	//	OrganizationName	string		`json:"organization _id"`
-	//	OrganizationId		int			`json:"organization _name"`
-	//	OwnerGroupId		int			`json:"owner_group_id"`
-	//	OwnerGroupName		string		`json:"owner_group_name "`
-	//	OwnerId				int			`json:"owner_id"`
-	//	OwnerName			string		`json:"owner_name"`
-	//	TicketCount			int			`json:"ticket_count"`
-	//	LastContactAt		int			`json:"last_contact_at"`
-	//	LastContactImAt		int			`json:"first_contact_at"`
-	//	FirstContactAt		int			`json:"first_contact_im_at"`
-	//	FirstContactImAt	int			`json:"last_contact_im_at"`
-	//	OpenApiToken		string		`json:"open_api_token"`
-	//	Alters 				interface{}	`json:"alters"`
-	//	FollowUp 			interface{}	`json:"follow_up"`
-	//} `json:"customer"`
 }
 
 // 新增客户请求体
