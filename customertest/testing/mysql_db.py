@@ -1,7 +1,7 @@
+# -*- coding: utf-8 -*-
 """
 数据库注册连接
 """
-
 import pymysql
 import os
 import configparser as parser

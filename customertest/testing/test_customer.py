@@ -1,8 +1,18 @@
+# -*- coding: utf-8 -*-
+
+"""
+testing for customer
+"""
+from time import strftime, localtime, time
+
 import json
+import os
 import random
 import unittest
 import requests
-from comm.mysql_db import DB
+
+from testing.HTMLTestRunner import HTMLTestRunner
+from testing.mysql_db import DB
 
 
 
@@ -19,14 +29,14 @@ city_dict = {
 }
 
 class TestCustomer(unittest.TestCase):
-    create_customer = "http://127.0.0.1:8000/api/v2/admin/customer/create"
-    delete_customer = "http://127.0.0.1:8000/api/v2/admin/customer/delete"
-    create_follow = "http://127.0.0.1:8000/api/v2/admin/customer/create-follow"
-    delete_follow = "http://127.0.0.1:8000/api/v2/admin/customer/delete-follow"
-    show_customer = "http://127.0.0.1:8000/api/v2/admin/customer/show"
-    update_customer = "http://127.0.0.1:8000/api/v2/admin/customer/update"
-    get_customer = "http://127.0.0.1:8000/api/v2/admin/customer/list"
-    search_customer = "http://127.0.0.1:8000/api/v2/admin/customer/search"
+    create_customer = "http://127.0.0.1:8000/admin/v2/customer/create"
+    delete_customer = "http://127.0.0.1:8000/admin/v2/customer/delete"
+    create_follow = "http://127.0.0.1:8000/admin/v2/customer/create-follow"
+    delete_follow = "http://127.0.0.1:8000/admin/v2/customer/delete-follow"
+    show_customer = "http://127.0.0.1:8000/admin/v2/customer/show"
+    update_customer = "http://127.0.0.1:8000/admin/v2/customer/update"
+    get_customer = "http://127.0.0.1:8000/admin/v2/customer/list"
+    search_customer = "http://127.0.0.1:8000/admin/v2/customer/search"
     last_data = {}
     db = DB()
 
@@ -53,6 +63,8 @@ class TestCustomer(unittest.TestCase):
         }
 
         self.db.clear("ut_customer")
+        self.db.clear("ut_customer_follow_up")
+        self.db.clear("ut_customer_alteration")
 
 
     def new_customer(self):
@@ -84,7 +96,7 @@ class TestCustomer(unittest.TestCase):
         """
         api_lst = []
         count = 0
-        for i in range(2500):
+        for i in range(200):
             self.customer_data["customer_nike_name"] = "test{}".format(i)
             self.customer_data["desc"] = "测试客户0{}".format(i)
             self.customer_data["tag"] = "测试标签0{}".format(i)
@@ -95,7 +107,7 @@ class TestCustomer(unittest.TestCase):
             self.customer_data["province"] = random.choice(province_lst)
             self.customer_data["city"] = city_dict[self.customer_data["province"]]
             self.customer_data["source_channel"] = "api"
-            self.customer_data["open_api_token"] = "{}-1995-1996-TEST".format(random.randint(1000, 2000))
+            self.customer_data["open_api_token"] = "{}-1995-1996-TEST".format(random.randint(100, 200))
 
             r = requests.post(self.create_customer, data=json.dumps(self.customer_data))
             res = r.json()
@@ -111,9 +123,9 @@ class TestCustomer(unittest.TestCase):
 
         r = requests.get(self.get_customer, params={"curr_page": 1, "page_size": 1000})
         res = r.json()
-        col = len(res["customers"])
         self.assertEqual(res["code"], 0)
         self.assertEqual(res["msg"], "success")
+        col = len(res["customers"])
         self.assertEqual(count, col)
 
 
@@ -154,6 +166,7 @@ class TestCustomer(unittest.TestCase):
         res = r.json()
         self.assertEqual(res["code"], 1)
         self.assertEqual(res["msg"], "incoming parameter error")
+
 
     def test_new_follow_uid_err(self):
         """
@@ -237,7 +250,6 @@ class TestCustomer(unittest.TestCase):
         post = {"id": 88888888888888}
         r = requests.post(self.delete_follow, data=json.dumps(post))
         res = r.json()
-        print(res["msg"])
         self.assertEqual(res["code"], 1)
         self.assertEqual(res["msg"], "deleted customer follow up does not exist")
 
@@ -286,6 +298,7 @@ class TestCustomer(unittest.TestCase):
             "desc": "lzs"
         }
         res = requests.post(self.update_customer, data=json.dumps(data)).json()
+
         self.assertEqual(res["code"], 0)
         self.assertEqual(res["msg"], "success")
         res_search = requests.get(self.show_customer, params={"customer_id": customer_id}).json()
@@ -313,7 +326,7 @@ class TestCustomer(unittest.TestCase):
         """
         count = 0
         api_lst = []
-        for i in range(2500):
+        for i in range(200):
             self.customer_data["customer_nike_name"] = "test{}".format(i)
             self.customer_data["open_api_token"] = "{}-1995-1996-TEST".format(random.randint(1000, 2000))
             res = requests.post(self.create_customer, data=json.dumps(self.customer_data)).json()
@@ -326,7 +339,7 @@ class TestCustomer(unittest.TestCase):
                 self.assertEqual(res["code"], 1)
                 self.assertEqual(res["msg"], "the customer is registered")
 
-        for size in range(1, 500):
+        for size in range(1, 100):
             all_page = count // size
             for page in range(20, 50):
                 res = requests.get(self.get_customer, params={"curr_page": page, "page_size": size}).json()
@@ -344,3 +357,43 @@ class TestCustomer(unittest.TestCase):
 
                     self.assertEqual(len(res["customers"]), size)
 
+
+if __name__ == "__main__":
+
+    suite = unittest.TestSuite()
+    # 获取TestSuite的实例对象
+    suite.addTest(TestCustomer("new_customer"))
+    suite.addTest(TestCustomer("test_search_customer"))
+    suite.addTest(TestCustomer("test_create_para_err"))
+    suite.addTest(TestCustomer("test_new_follow"))
+    suite.addTest(TestCustomer("test_new_follow_cid_err"))
+    suite.addTest(TestCustomer("test_new_follow_uid_err"))
+    suite.addTest(TestCustomer("test_new_follow_content_err"))
+    suite.addTest(TestCustomer("test_new_follow_customer_none"))
+    suite.addTest(TestCustomer("test_new_lot_follow"))
+    suite.addTest(TestCustomer("test_del_follow"))
+    suite.addTest(TestCustomer("test_del_follow_none"))
+    suite.addTest(TestCustomer("test_search_customer_none"))
+    suite.addTest(TestCustomer("test_search_customer_para_err"))
+    suite.addTest(TestCustomer("test_update_customer"))
+    suite.addTest(TestCustomer("test_update_customer_none"))
+    suite.addTest(TestCustomer("test_page_customer"))
+
+    now = strftime("%Y-%m-%M-%H_%M_%S", localtime(time()))
+    # 获取当前时间
+
+    filename = now + "test_customer.html"
+    # 文件名
+
+    filename = os.path.join(os.path.abspath(".."), "res", filename)
+
+    fp = open(filename, 'wb')
+    # 以二进制的方式打开文件并写入结果
+
+    runner = HTMLTestRunner(
+        stream=fp,
+        verbosity=2,
+        title="测试报告的标题",
+        description="测试报告的详情")
+
+    runner.run(suite)
